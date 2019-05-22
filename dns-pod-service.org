@@ -5,6 +5,171 @@
 #+PROPERTY: header-args:tmate+  :session ii:packet
 #+STARTUP: showeverything
 
+* Introduction
+
+Kubernetes DNS schedules a DNS Pod and Service on the cluster, and configures
+the kubelets to tell individual containers to use the DNS Service's IP to
+resolve DNS names.
+
+** What things get DNS names?
+
+Every Service defined in the cluster (including the DNS server itself) is
+assigned a DNS name.  By default, a client Pod's DNS search list will
+include the Pod's own namespace and the cluster's default domain.  This is best
+illustrated by example:
+
+Assume a Service named =foo= in the Kubernetes namespace =bar=.  A Pod running
+in namespace =bar= can look up this service by simply doing a DNS query for
+=foo=.  A Pod running in namespace =quux= can look up this service by doing a
+DNS query for =foo.bar=.
+
+* Validate Example
+  :PROPERTIES:
+    :header-args:shell+: :dir (symbol-value 'ssh-tramp-dir)
+    :header-args:bash+: :dir (file-name-directory buffer-file-name)
+  :END:
+   Let's directly 
+
+The following sections detail the supported record types and layout that is
+supported.  Any other layout or names or queries that happen to work are
+considered implementation details and are subject to change without warning.
+For more up-to-date specification, see [[https://github.com/kubernetes/dns/blob/master/docs/specification.md][Kubernetes DNS-Based Service Discovery]]
+
+*** Flow
+- [X] namespace bar
+- [X] with a service named foo
+- [X] namespace quux
+- [ ] with a pod that can query for foo.bar
+
+**** namespace bar
+
+[[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#working-with-namespaces][Working With Namespaces Documentation]]
+
+#+BEGIN_SRC shell
+kubectl create namespace bar
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+#+end_EXAMPLE
+
+#+BEGIN_SRC shell :async
+hostname
+kubectl get namespace bar
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+zpair
+NAME   STATUS   AGE
+bar    Active   3m41s
+#+end_EXAMPLE
+
+**** service foo
+
+
+#+BEGIN_SRC shell
+kubectl create service clusterip foo --help 2>&1 | grep -A2 headless
+#+END_SRC
+
+#+BEGIN_SRC shell
+kubectl run my-main-httpd --image=httpd --replicas=1 --port=80 --namespace=bar
+#+END_SRC
+
+
+#+RESULTS:
+#+begin_EXAMPLE
+deployment.apps/my-main-httpd created
+#+end_EXAMPLE
+
+#+BEGIN_SRC shell :async yes
+kubectl get deployment my-main-httpd --namespace=bar -o wide
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS      IMAGES   SELECTOR
+my-main-httpd   1/1     1            1           80s   my-main-httpd   httpd    run=my-main-httpd
+#+end_EXAMPLE
+
+#+NAME: pod-details
+#+BEGIN_SRC shell :async yes :results table
+kubectl get pod --namespace=bar -o wide 2>&1
+#+END_SRC
+
+#+RESULTS: pod-details
+#+begin_EXAMPLE
+NAME                             READY   STATUS    RESTARTS   AGE   IP           NODE                          NOMINATED NODE   READINESS GATES
+my-main-httpd-57d94f5797-t92tb   1/1     Running   0          22m   10.244.0.8   kind-kubetest-control-plane   <none>           <none>
+#+end_EXAMPLE
+
+#+RESULTS:
+#+begin_EXAMPLE
+NAME                             READY   STATUS    RESTARTS   AGE    IP           NODE                          NOMINATED NODE   READINESS GATES
+my-main-httpd-57d94f5797-t92tb   1/1     Running   0          3m4s   10.244.0.8   kind-kubetest-control-plane   <none>           <none>
+#+end_EXAMPLE
+
+#+BEGIN_SRC shell
+kubectel exec -- something -- curl 10.244.0.8:80
+#+END_SRC
+
+#+iBEGIN_SRC shell :async
+#+BEGIN_SRC tmate
+kubectl expose deployment my-main-httpd --port=8080 --target-port=80 --type=NodePort --namespace=bar
+#+END_SRC
+
+#+BEGIN_SRC shell :async
+kubectl create service clusterip foo --namespace bar --clusterip="None"
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+service/foo created
+#+end_EXAMPLE
+
+#+BEGIN_SRC shell :async
+kubectl get service my-main-httpd --namespace bar
+#+END_SRC
+
+#+BEGIN_SRC shell
+kubectl run -ti my-bash-3 --image=bash --namespace=quux nslookup my-main-httpd.bar
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      my-main-httpd.bar
+Address 1: 10.106.1.140 my-main-httpd.bar.svc.cluster.local
+#+end_EXAMPLE
+
+**** namespace quux
+
+#+BEGIN_SRC shell :async
+kubectl create namespace quux
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+namespace/quux created
+#+end_EXAMPLE
+
+#+BEGIN_SRC shell :async
+kubectl get namespace quux
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+NAME   STATUS   AGE
+quux   Active   59s
+#+end_EXAMPLE
+
+**** pod to query foo.bar from ns quux
+
+#+BEGIN_SRC tmate
+kubectl exec -h
+#+END_SRC
+
 * Connect to fresh ubuntu 18.04 box as root
   :PROPERTIES:
     :header-args:shell+: :dir (symbol-value 'ssh-tramp-dir)
@@ -12,149 +177,41 @@
   :END:
   
 We want to establish the ssh user and packet host, you don't need to worry about these two code blocks, as they're just used to make the rest of the doc easier.
-** ssh-user
-#+BEGIN_SRC elisp :results output value
-(concat ssh-user)
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC elisp
-"root"
-#+END_SRC
-** packet-host
-
-#+NAME: packet-host
-#+BEGIN_SRC elisp :results output value
-(concat ssh-host)
-#+END_SRC
-
-#+RESULTS: packet-host
-#+BEGIN_SRC elisp
-"147.75.80.39"
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC elisp
-"147.75.80.39"
-#+END_SRC
-
 ** ssh
-
    Now let's ssh into the machine.  You should see a login in your target window.
 #+BEGIN_SRC tmate
   ssh root@<<packet-host()>>
 #+END_SRC
 
-
-All *shell* code blocks refer to your packet box, but print the results into this org file.  So by executing the below code, you will see your own unique results below.
-
-#+BEGIN_SRC shell
-hostname
-date
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_EXAMPLE
-zpair
-Wed May 22 10:13:24 UTC 2019
-#+END_EXAMPLE
-
-#+BEGIN_SRC bash
-hostname
-date
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_EXAMPLE
-zolarizo
-Wed May 22 22:13:28 NZST 2019
-#+END_EXAMPLE
-
-* Get Kubernetes, kubetest & KIND
+* Check Cluster State
   :PROPERTIES:
     :header-args:shell+: :dir (symbol-value 'ssh-tramp-dir)
     :header-args:bash+: :dir (file-name-directory buffer-file-name)
   :END:
 
-
-- Following feedback from [[https://kubernetes.slack.com/messages/CEKK1KTN2/convo/CEKK1KTN2-1555018633.255400/?thread_ts=1555018633.255400][@neolit123 on kubernetes.slack.com #kind]]
-
-#+BEGIN_SRC tmate
-  echo "Getting Kubernetes..."
-  go get k8s.io/kubernetes
-  echo "Getting Kubetest..."
-  go get k8s.io/test-infra/kubetest
-#+END_SRC
-
-I ran into errors trying to build kind from master...
-#+BEGIN_SRC tmate
-  echo "Getting Kind..."
-  go get sigs.k8s.io/kind
-#+END_SRC
-
-Try building from tag v0.3.0
-
-#+BEGIN_SRC tmate
-cd ~/go/src/sigs.k8s.io/kind
-git checkout v0.3.0
-git branch v0.3.0
-make
-mkdir -p /root/go/bin
-make install
-export PATH=/root/go/bin:$PATH
-#+END_SRC
-
-** Build kubetest
-
-#+BEGIN_SRC tmate
-  echo "Build kubetest"
-  cd ~/go/src/k8s.io/test-infra/kubetest
-  go build
-  cp kubetest ../../kubernetes
-  cd ../../kubernetes
-  echo "Getting a cluster up with Kind..."
-  ./kubetest --deployment=kind --kind-binary-version=build --provider=skeleton --build --up
-#+END_SRC
-
-** Check on Docker
-
 #+BEGIN_SRC shell
-  docker ps -a
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_EXAMPLE
-CONTAINER ID        IMAGE                                     COMMAND                  CREATED             STATUS              PORTS               NAMES
-c679f00d5586        kube-build:build-2aa32e7d50-5-v1.12.5-1   "chown -R 0:0 /go/sr…"   6 seconds ago       Up 5 seconds                            kube-build-data-2aa32e7d50-5-v1.12.5-1
-#+END_EXAMPLE
-
-#+BEGIN_SRC shell
-  docker images
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_EXAMPLE
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-golang              1.12.5              7ced090ee82e        2 weeks ago         774MB
-#+END_EXAMPLE
-
-
-** Check Cluster State
-
-#+BEGIN_SRC shell
-  ln -sf ~/.kube/kind-config-kind-kubetest ~/.kube/config
   kubectl version
 #+END_SRC
 
 #+RESULTS:
 #+begin_EXAMPLE
 Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.2", GitCommit:"66049e3b21efe110454d67df4fa62b08ea79a19b", GitTreeState:"clean", BuildDate:"2019-05-16T16:23:09Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
-Server Version: version.Info{Major:"1", Minor:"16+", GitVersion:"v1.16.0-alpha.0.303+1c100619671dfa-dirty", GitCommit:"1c100619671dfaffe09f555a67bd9c43099f12ed", GitTreeState:"dirty", BuildDate:"2019-05-22T06:31:38Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"16+", GitVersion:"v1.16.0-alpha.0.307+c2633d89698cc1-dirty", GitCommit:"c2633d89698cc1559d0501ef1f2cde62f7bce6ba", GitTreeState:"dirty", BuildDate:"2019-05-22T11:28:34Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
 #+end_EXAMPLE
+
+#+BEGIN_SRC shell
+hostname
+#+END_SRC
 
 #+BEGIN_SRC shell
 kubectl get nodes
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.2", GitCommit:"66049e3b21efe110454d67df4fa62b08ea79a19b", GitTreeState:"clean", BuildDate:"2019-05-16T16:23:09Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"16+", GitVersion:"v1.16.0-alpha.0.307+c2633d89698cc1-dirty", GitCommit:"c2633d89698cc1559d0501ef1f2cde62f7bce6ba", GitTreeState:"dirty", BuildDate:"2019-05-22T11:28:34Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+#+end_EXAMPLE
 
 #+RESULTS:
 #+begin_EXAMPLE
@@ -186,14 +243,60 @@ kube-system   kube-scheduler-kind-kubetest-control-plane            1/1     Runn
 #+BEGIN_SRC bash :tangle test-noweb-ref.sh
   <<Install Docker>>
 #+END_SRC
-
-* Footnotes
-
-#+BEGIN_SRC shell
-hostname
+* Helm
+#+BEGIN_SRC shell :async
+cd /tmp
+git clone https://github.com/helm/charts.git
 #+END_SRC
 
 #+RESULTS:
+#+begin_EXAMPLE
+#+end_EXAMPLE
+* TODOs
+** Grab deployment IP programmatically.
+
+
+* Footnotes
+** ssh-user
+#+BEGIN_SRC elisp :results output value
+(concat ssh-user)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC elisp
+"root"
+#+END_SRC
+** packet-host
+
+#+NAME: packet-host
+#+BEGIN_SRC elisp :results output value
+(concat ssh-host)
+#+END_SRC
+
+#+RESULTS: packet-host
+#+BEGIN_SRC elisp
+"147.75.80.39"
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC elisp
+"147.75.80.39"
+#+END_SRC
+
+
+#+BEGIN_SRC shell
+hostname
+#+END_SRC# Local Variables:
+# eval: (set (make-local-variable 'ssh-user) "root")
+# eval: (setq-local ssh-host "147.75.80.39")
+# eval: (set (make-local-variable 'ssh-dir) "~")
+# eval: (set (make-local-variable 'ssh-tramp-dir) (concat "/ssh:" ssh-user "@" ssh-host ":" ssh-dir))
+# End:
+
+#+RESULTS:
+#+begin_EXAMPLE
+p70
+#+end_EXAMPLE#+RESULTS:
 #+begin_EXAMPLE
 p70
 #+end_EXAMPLE
