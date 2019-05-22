@@ -24,7 +24,7 @@
     
        And so we are showing how you can let someone easily describe the behavior, by combinging the narrative and code into a singular, live documentation.
 * Successes for Today
-** NEXT There is an org file that connects to the packet box with a doc/target (left eye/right eye) setup.
+** IN-PROGRESS There is an org file that connects to the packet box with a doc/target (left eye/right eye) setup.
 ** TODO There is a chosen example from shared docs inside this org file
 ** TODO We can run kubectl --apply  from org to the box, and see results back in org.
 ** TODO We know how to actually run the example give in shared docs on our cluster.
