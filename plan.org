@@ -1,4 +1,5 @@
 #+TITLE: Plan.org
+#+TODO: TODO NEXT IN-PROGRESS | DONE
 
 * Goal for the Project
   //What is the single sentence purpose of converting the linked k8s docs to an org file?//
@@ -23,12 +24,12 @@
     
        And so we are showing how you can let someone easily describe the behavior, by combinging the narrative and code into a singular, live documentation.
 * Successes for Today
-** There is an org file that connects to the packet box with a doc/target (left eye/right eye) setup.
-** There is a chosen example from shared docs inside this org file
-** We can run kubectl --apply  from org to the box, and see results back in org.
-** We know how to actually run the example give in shared docs on our cluster.
-** We can start the log, run the example, stop the logs and see the output.
-** We can do some minor analysis on the log.
+** NEXT There is an org file that connects to the packet box with a doc/target (left eye/right eye) setup.
+** TODO There is a chosen example from shared docs inside this org file
+** TODO We can run kubectl --apply  from org to the box, and see results back in org.
+** TODO We know how to actually run the example give in shared docs on our cluster.
+** TODO We can start the log, run the example, stop the logs and see the output.
+** TODO We can do some minor analysis on the log.
 * Useful Links
 ** DNS Documentation fro k8s.io
   Narrative Doc: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
