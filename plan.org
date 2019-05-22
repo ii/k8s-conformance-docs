@@ -1,2 +1,36 @@
 #+TITLE: Plan.org
 
+* Goal for the Project
+  //What is the single sentence purpose of converting the linked k8s docs to an org file?//
+  
+* Goal For Tomorrow
+  //What is the goal, and stretch goals, for tomorrow. How do they point to the project goal?//
+  
+  - Have an org file where, when we walk through the org file with a cluster already configured and up, there is a place to start capturing the audit logs.
+  - Next would be to run something from the documentation, the behavior we are wanting to make sure we have a test for.
+  - Then, we stop the audit logs.  Now we can query the audit logs without the cluster having to be up.
+
+** Summary  
+   We are going to be using an example in a doc shared with us, but actually runing the example on the kube cluster. Then, we can grab the audit logs taken while that example ran, and be able to analyze them.  All of this woudl happen directly inside kind and this documentation.
+ 
+   And so the steps for the demo are:
+   - There is a description of behavior with an example
+   - That example then has a code block with these steps:
+     - start audit log
+     - run the example given
+     - stop audit logs
+     - snoop the logs.
+    
+       And so we are showing how you can let someone easily describe the behavior, by combinging the narrative and code into a singular, live documentation.
+* Successes for Today
+** There is an org file that connects to the packet box with a doc/target (left eye/right eye) setup.
+** There is a chosen example from shared docs inside this org file
+** We can run kubectl --apply  from org to the box, and see results back in org.
+** We know how to actually run the example give in shared docs on our cluster.
+** We can start the log, run the example, stop the logs and see the output.
+** We can do some minor analysis on the log.
+* Useful Links
+** DNS Documentation fro k8s.io
+  Narrative Doc: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+  Reference Doc: https://github.com/kubernetes/dns/blob/master/docs/specification.md
+
