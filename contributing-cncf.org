@@ -1,0 +1,15 @@
+* There is a felt need to make it easy to get started and contribute to CNCF projects.
+
+We'd like to explore:
+
+** How do you do it?
+
+[[http://contribute.cncf.io/]]
+
+** Tools and methods.
+
+
+#+BEGIN_SRC text
+Co-Authored-By: Cheikh Rouhou <CheikhRouhouInes94@gmail.com>
+Co-Authored-By: Gergey Csatari <gergely.csatari@nokia.com>
+#+END_SRC
