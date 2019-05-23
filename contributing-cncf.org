@@ -4,12 +4,49 @@ We'd like to explore:
 
 ** How do you do it?
 
+The CNCF has a website with links to Contributor Guides for all the hosted projects:
 [[http://contribute.cncf.io/]]
+
+We chose to explore the Kubernetes contributor guide.
+[[https://github.com/kubernetes/community/tree/master/contributors/guide]]
+
+We found a list of good-first-issues:
+https://go.k8s.io/good-first-issue
+
+@icheikhrouhou speaks French and thought that fixing the french docs would be
+great.
+
+** steps
+- [X] [[https://github.com/kubernetes/community/tree/master/contributors/guide#sign-the-cla][Sign the CLA]]
+- [X] Choose a good first issue
+- [X] Check out the code, and create a branch
+- [X] Made a change to the links
+- [X] Ensure everyone get's a Co-Authored-By
+- [X] Push to repo / create branch
+- [ ] Visit the [[https://github.com/kubernetes/kubernetes/][kubernetes/kubernetes]] repo
+- [ ] Click on Fork
+- [ ] Check out Fork git@github.com:ii/kubernetes.git
+- [ ] BRANCH
+- [ ] COMMIT CHANGE
+- [ ] PUSH BRANCH
+- [ ] CREATE PR
+????
+
+** Check for on our computer
+
+#+BEGIN_SRC tmate
+  cd ~/
+  git clone --depth 1 https://github.com/kubernetes/website.git 
+#+END_SRC
+
+
+** How do I get to see my commit in the master branch!
 
 ** Tools and methods.
 
 
 #+BEGIN_SRC text
-Co-Authored-By: Cheikh Rouhou <CheikhRouhouInes94@gmail.com>
-Co-Authored-By: Gergey Csatari <gergely.csatari@nokia.com>
+  Co-Authored-By: Cheikh Rouhou <CheikhRouhouInes94@gmail.com>
+  Co-Authored-By: Gergey Csatari <gergely.csatari@nokia.com>
+  Co-Authored-By: Lindsey Tulloch <lt15bo@brocku.ca>
 #+END_SRC
